@@ -63,7 +63,7 @@ export default function InterviewPrepPage() {
           <div>
             <p className="font-medium text-sm">New: OA Simulator</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Take a timed mock test matching your target track's typical OA format.
+              Take a timed mock test matching your target track&apos;s typical OA format.
             </p>
           </div>
         </div>

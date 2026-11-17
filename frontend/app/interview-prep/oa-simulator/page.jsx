@@ -120,7 +120,7 @@ export default function OASimulatorPage() {
       </Link>
       <h1 className="page-title">OA Simulator</h1>
       <p className="page-subtitle">
-        A timed mock test matching your target track's typical online assessment format.
+        A timed mock test matching your target track&apos;s typical online assessment format.
       </p>
 
       {phase === "select" && (

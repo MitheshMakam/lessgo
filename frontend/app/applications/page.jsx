@@ -80,7 +80,7 @@ export default function ApplicationsPage() {
       <div className="mx-auto max-w-lg px-4 py-20 sm:py-28 text-center">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">Log in to track applications</h1>
         <p className="text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed">
-          Keep every company you've applied to organized in one Kanban board.
+          Keep every company you&apos;ve applied to organized in one Kanban board.
         </p>
         <Link href="/login" className="btn-primary">
           Log In
