@@ -1,0 +1,277 @@
+// LessGo - Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Track {
+  FAANG
+  PRODUCT_STARTUP
+  SERVICE_FRESHER
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  password      String
+  avatarUrl     String?
+  track         Track?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  leetcodeProgress LeetcodeProgress[]
+  notes            Note[]
+  roadmapProgress  RoadmapProgress[]
+  bookmarks        Bookmark[]
+  applications     Application[]
+  activity         Activity[]
+  starAnswers      StarAnswer[]
+  oaAttempts       OASimulatorAttempt[]
+  interviewBotSessions InterviewBotSession[]
+}
+
+// ---------------- Interview Prep ----------------
+
+model Company {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  logoUrl   String?
+  questions Question[]
+}
+
+enum QuestionCategory {
+  TECHNICAL
+  APTITUDE
+  HR
+  CS_SUBJECT
+}
+
+model Question {
+  id         String           @id @default(uuid())
+  title      String
+  content    String
+  answer     String?
+  category   QuestionCategory
+  difficulty String           @default("Medium")
+  tags       String[]
+  company    Company?         @relation(fields: [companyId], references: [id])
+  companyId  String?
+  // Optional MCQ fields — only populated for questions used by the OA Simulator's
+  // auto-graded aptitude section. Existing open-ended interview-prep questions
+  // leave these null and are completely unaffected.
+  options            Json?
+  correctOptionIndex Int?
+  createdAt  DateTime         @default(now())
+}
+
+// ---------------- LeetCode Tracker ----------------
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  ATTEMPTED
+  SOLVED
+}
+
+model Problem {
+  id                 String     @id @default(uuid())
+  slNo               Int        @unique
+  title              String
+  topic              String
+  difficulty         Difficulty
+  link               String
+  companyTags        String[]   @default([])
+  hints              String[]   @default([])
+  approach           String?
+  timeComplexity     String?
+  spaceComplexity    String?
+  visualizationSteps Json?
+  // Per-track relevance weight, e.g. {"FAANG": 90, "PRODUCT_STARTUP": 60, "SERVICE_FRESHER": 30}.
+  // Used only to reorder the existing DSA list by the user's active track — no schema
+  // change was needed on company tagging, this layers on top of it.
+  trackWeights       Json       @default("{}")
+  progress           LeetcodeProgress[]
+  notes              Note[]
+}
+
+// ---------------- Application Tracker ----------------
+
+enum ApplicationStage {
+  APPLIED
+  OA_SCHEDULED
+  OA_DONE
+  INTERVIEW
+  OFFER
+  REJECTED
+}
+
+model Application {
+  id          String           @id @default(uuid())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+  companyName String
+  role        String
+  stage       ApplicationStage @default(APPLIED)
+  notes       String?
+  appliedDate DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// ---------------- Daily Streak / Activity ----------------
+
+model Activity {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  date   DateTime // stored as the UTC midnight of the activity day
+
+  @@unique([userId, date])
+}
+
+model LeetcodeProgress {
+  id        String         @id @default(uuid())
+  user      User           @relation(fields: [userId], references: [id])
+  userId    String
+  problem   Problem        @relation(fields: [problemId], references: [id])
+  problemId String
+  status    ProgressStatus @default(NOT_STARTED)
+  updatedAt DateTime       @updatedAt
+
+  @@unique([userId, problemId])
+}
+
+model Note {
+  id        String   @id @default(uuid())
+  content   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  problemId String
+  createdAt DateTime @default(now())
+}
+
+// ---------------- Roadmaps ----------------
+
+model Roadmap {
+  id          String        @id @default(uuid())
+  title       String        @unique
+  description String
+  icon        String?
+  steps       RoadmapStep[]
+}
+
+model RoadmapStep {
+  id         String   @id @default(uuid())
+  title      String
+  description String
+  order      Int
+  resourceUrl String?
+  roadmap    Roadmap  @relation(fields: [roadmapId], references: [id])
+  roadmapId  String
+  progress   RoadmapProgress[]
+}
+
+model RoadmapProgress {
+  id        String      @id @default(uuid())
+  user      User        @relation(fields: [userId], references: [id])
+  userId    String
+  step      RoadmapStep @relation(fields: [stepId], references: [id])
+  stepId    String
+  completed Boolean     @default(false)
+
+  @@unique([userId, stepId])
+}
+
+// ---------------- Free Resources ----------------
+
+enum ResourceType {
+  YOUTUBE
+  DOCS
+  CHEATSHEET
+  PDF
+  WEBSITE
+}
+
+model Resource {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  url         String
+  type        ResourceType
+  category    String
+  createdAt   DateTime     @default(now())
+  bookmarks   Bookmark[]
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  resource   Resource @relation(fields: [resourceId], references: [id])
+  resourceId String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, resourceId])
+}
+
+// ---------------- OA Simulator ----------------
+
+model OASimulatorAttempt {
+  id                String   @id @default(uuid())
+  user              User     @relation(fields: [userId], references: [id])
+  userId            String
+  track             Track
+  totalScore        Int
+  correctCount      Int
+  incorrectCount    Int
+  timeTakenSeconds  Int
+  sectionBreakdown  Json     // e.g. [{ section: "Aptitude", correct: 8, total: 10 }, ...]
+  createdAt         DateTime @default(now())
+}
+
+// ---------------- AI Mock Interview Bot ----------------
+
+enum InterviewRoundType {
+  TECHNICAL
+  HR
+  SYSTEM_DESIGN
+}
+
+model InterviewBotSession {
+  id         String             @id @default(uuid())
+  user       User               @relation(fields: [userId], references: [id])
+  userId     String
+  roundType  InterviewRoundType
+  track      Track?
+  transcript Json               @default("[]") // [{ role: "assistant"|"user", content: "..." }, ...]
+  feedback   Json?              // { clarity, technicalAccuracy, pacing, notes }
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+}
+
+// ---------------- Resume Analyzer / STAR Builder ----------------
+
+model StarAnswer {
+  id               String   @id @default(uuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  projectName      String
+  situation        String
+  task             String
+  action           String
+  result           String
+  generatedAnswer  String
+  createdAt        DateTime @default(now())
+}

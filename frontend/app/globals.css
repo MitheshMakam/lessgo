@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+}
+
+/* Base typography defaults — gives every heading a tighter, more deliberate
+   feel out of the box, even where a page doesn't set its own size classes. */
+@layer base {
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+/* Component classes MUST live in @layer components so Tailwind places them
+   before utility classes in the compiled stylesheet — otherwise a utility
+   like `w-32` can lose to `.input-field`'s `w-full` since both would land
+   at equal specificity in source order. */
+@layer components {
+  /* Premium card: no hard border in light mode (relies on layered shadow for
+     separation from the page background), subtle border only in dark mode
+     where shadows barely register against a dark background. */
+  .card {
+    @apply bg-white dark:bg-gray-900 rounded-2xl transition-all duration-300 hover:-translate-y-0.5;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(15, 23, 42, 0.10);
+  }
+  .card:hover {
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 16px 32px -8px rgba(15, 23, 42, 0.14);
+  }
+  .dark .card {
+    @apply border border-gray-800/80;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+  .dark .card:hover {
+    @apply border-gray-700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors duration-200;
+  }
+
+  /* Subtle link underline animation used across the site for a more premium feel */
+  .link-underline {
+    @apply relative;
+  }
+  .link-underline::after {
+    content: "";
+    @apply absolute left-0 -bottom-0.5 h-px w-0 bg-current transition-all duration-300;
+  }
+  .link-underline:hover::after {
+    @apply w-full;
+  }
+
+  /* Reusable page-header pattern: title + subtitle, consistent spacing rhythm */
+  .page-title {
+    @apply text-3xl sm:text-4xl font-bold tracking-tight mb-2;
+  }
+  .page-subtitle {
+    @apply text-gray-500 dark:text-gray-400 mb-8 text-base leading-relaxed;
+  }
+}
