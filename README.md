@@ -1,20 +1,23 @@
-# 🚀 LessGo — Student Placement Prep Platform
+# LessGo
 
-LessGo is a clean, minimal, beginner-friendly full-stack web app that brings together
-everything a student needs to prepare for placements:
+### A placement-preparation workspace
 
-- 📋 **Interview Preparation** — company-wise questions, aptitude, HR, and CS subjects
-- 🧠 **DSA Practice** — problem tracker with progressive hints, plain-English approach walkthroughs, time/space complexity, and animated step-by-step algorithm visualizations
-- 🗺️ **Learning Roadmaps** — guided step-by-step paths (Frontend, Backend, Full Stack, DSA, AI/ML)
-- 📚 **Free Resources** — curated YouTube videos, docs, cheat sheets, and PDFs
-- 🗂️ **Application Tracker** — a Kanban board (Applied → OA → Interview → Offer/Reject)
-- 🎙️ **Voice Mock Interview** — a Siri-style assistant that speaks questions in a recruiter-like voice, listens to your spoken answer, and talks back with feedback — no external API needed
-- 📊 **Progress** — one page combining your Placement Readiness Score, daily streak, and topic-wise breakdown
-- 🔐 Authentication, a personal dashboard, and dark/light mode — fully responsive, with a modern, reactive UI (scroll animations, tilt cards, skeleton loading states).
-- 🎯 **Track System** — set a target track (FAANG / Product-Startup / Service-Fresher) in Settings; it reorders DSA questions by relevance, reweights your Readiness Score, and tailors the OA Simulator and AI Interview Bot content
-- ⏱️ **OA Simulator** — a timed mock test matching your track's typical OA format (auto-graded aptitude MCQs + self-reported coding), with a scored section-wise report
-- 🤖 **AI Interview Bot** — an LLM-powered mode inside Mock Interview with Technical/HR/System Design rounds, dynamic follow-up questions based on your actual answers, and a scored AI report (clarity, technical accuracy, pacing). Requires a free Google Gemini API key.
-- 📄 **Resume Analyzer & STAR Builder** — paste your resume for an ATS-style score, missing-keyword/metric/link flags, and a guided Situation-Task-Action-Result builder for each detected project — saved answers are referenced by the AI Interview Bot's HR round. Requires a free Google Gemini API key.
+LessGo brings interview practice, DSA tracking, job-application organization, and AI-assisted coaching into one full-stack application. It is designed for students preparing for technical and early-career software roles.
+
+## Product features
+
+- **Interview preparation:** browse company-tagged technical, aptitude, HR, and computer-science questions.
+- **DSA practice:** track problem status, add revision notes, reveal progressive hints, review plain-English approaches and complexity, and step through algorithm visualizations.
+- **Learning resources:** follow guided Frontend, Backend, Full Stack, DSA, and AI/ML roadmaps; browse and bookmark curated resources.
+- **Application tracking:** organize applications across stages with a Kanban board and a mobile-friendly stage selector.
+- **OA simulator:** take timed, track-aware mock assessments with auto-graded aptitude questions and a section-by-section result.
+- **Progress dashboard:** review DSA topic coverage, activity streaks, application progress, and a track-weighted Placement Readiness Score with its component breakdown and next-step suggestions.
+- **Personalized study plan:** generate a seven-day plan from tracked DSA and roadmap progress, recent AI interview scores, and the selected target track. Choose a daily study-time budget; the plan reports when available history is limited.
+- **Voice mock interview:** use browser speech recognition and text-to-speech for Classic Practice or run a conversational AI interview across Technical, HR, and System Design rounds. Classic Practice can request AI scores for structure, clarity, and relevance, with strengths and improvement tips. AI Bot sessions support dynamic follow-ups and an end-of-session report.
+- **Resume Analyzer:** paste resume text or upload a PDF/DOCX (up to 5 MB) for ATS-style feedback. Compare the resume with a job description to review an estimated match, evidence-backed skill matches and gaps, and suggested edits grounded in the resume. Build STAR answers from project notes; saved answers can inform the AI Bot's HR round. Uploaded files are parsed in memory and are not retained.
+- **Account and interface:** register and sign in, set a target hiring track that adjusts DSA ordering, OA content, AI interview context, and readiness-score weights, use a personal dashboard, and switch between light and dark themes. The interface is responsive across desktop and mobile.
+
+AI-powered interviews, AI voice feedback, study plans, resume analysis, and resume-to-job comparisons require a Google Gemini API key. Browser-based speech features require a supported browser and microphone permission.
 
 ---
 
@@ -26,6 +29,8 @@ everything a student needs to prepare for placements:
 | Backend    | Node.js, Express                              |
 | Database   | PostgreSQL + Prisma ORM                       |
 | Auth       | JWT + bcrypt                                  |
+| AI         | Google Gemini API                             |
+| Resume files | PDF/DOCX text extraction (in-memory)         |
 | Icons      | lucide-react                                  |
 
 ---
@@ -115,7 +120,7 @@ If you used the Docker Compose file, your `DATABASE_URL` is:
 postgresql://lessgo:lessgo@localhost:5432/lessgo?schema=public
 ```
 
-> **Optional but recommended:** set `GEMINI_API_KEY` in `backend/.env` to enable the **AI Interview Bot** and **Resume Analyzer/STAR Builder**. Gemini has a generous free tier — get a key in about a minute at https://aistudio.google.com/app/apikey. Everything else in the app works fully without it — those two specific features will return a clear "AI service not configured" message until a key is added.
+> **AI features:** set `GEMINI_API_KEY` in `backend/.env` to enable AI interview rounds and reports, Classic Practice AI feedback, personalized study plans, resume analysis, resume-to-job comparison, and STAR answer generation. A missing or invalid key produces an AI service error; non-AI features continue to work. Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### 5. Run migrations & seed sample data
 
@@ -157,6 +162,8 @@ Visit **http://localhost:3000** 🎉
 | `JWT_SECRET`   | Secret used to sign JWT tokens             |
 | `JWT_EXPIRES_IN` | Token expiry (e.g. `7d`)                 |
 | `CLIENT_URL`   | Frontend URL, used for CORS                |
+| `GEMINI_API_KEY` | Google Gemini API key for AI-powered features |
+| `GEMINI_MODEL` | Optional model override (defaults to `gemini-2.5-flash`) |
 
 ### frontend/.env.local
 | Variable              | Description               |
@@ -198,6 +205,7 @@ All routes are prefixed with `/api`.
 | GET    | `/analytics/topics`                    | Topic-wise solved/total breakdown    | ✅  |
 | GET    | `/analytics/streak`                    | Current/longest streak + 30-day map  | ✅  |
 | GET    | `/analytics/readiness`                 | Placement Readiness Score + suggestions (track-weighted if a track is set) | ✅ |
+| POST   | `/analytics/study-plan`                | Generate a personalized seven-day study plan from tracker and interview data | ✅ |
 | PUT    | `/auth/track`                          | Set/change the user's target track   | ✅  |
 | GET    | `/oa-simulator/config`                 | OA format (duration/sections) for a track | ✅ |
 | POST   | `/oa-simulator/start`                  | Start a timed OA attempt, get a track-curated question set | ✅ |
@@ -206,7 +214,10 @@ All routes are prefixed with `/api`.
 | POST   | `/interview-bot/start`                 | Start an AI-driven interview round (requires `GEMINI_API_KEY`) | ✅ |
 | POST   | `/interview-bot/:id/respond`           | Submit an answer, get a dynamic LLM follow-up | ✅ |
 | POST   | `/interview-bot/:id/finish`            | Get scored AI feedback (clarity/accuracy/pacing) | ✅ |
+| POST   | `/interview-bot/voice-feedback`        | Score one Classic Practice answer for structure, clarity, and relevance; stores feedback summary, not answer text | ✅ |
+| POST   | `/resume/upload`                       | Extract text from a PDF or DOCX resume in memory (5 MB limit) | ✅ |
 | POST   | `/resume/analyze`                      | ATS-style resume analysis (requires `GEMINI_API_KEY`) | ✅ |
+| POST   | `/resume/compare`                      | Compare resume evidence with a job description (requires `GEMINI_API_KEY`) | ✅ |
 | POST   | `/resume/star`                         | Generate + save a STAR-format answer | ✅  |
 | GET    | `/resume/star`                         | List saved STAR answers              | ✅  |
 | DELETE | `/resume/star/:id`                     | Delete a saved STAR answer           | ✅  |
@@ -230,7 +241,13 @@ All routes are prefixed with `/api`.
 - ✅ Daily streak tracking with a 30-day activity calendar
 - ✅ **Progress page** merging your Placement Readiness Score, streak calendar, and topic-wise progress rings into one view
 - ✅ Company-wise tagging on DSA problems, with a company filter
-- ✅ Voice-based mock interview assistant with a Siri-style animated orb — the assistant speaks questions aloud in a selectable voice, listens to your spoken answer, and talks back with feedback (uses the browser's built-in Web Speech API — works in Chrome/Edge on desktop, no external API key required)
+- ✅ Voice-based mock interview assistant with a selectable browser voice, live speech recognition, and immediate Classic Practice feedback; speech features use the browser Web Speech API, while optional LLM scoring uses Gemini
+- ✅ Optional AI coaching for Classic Practice answers: structure, clarity, relevance, strengths, and actionable improvements
+- ✅ AI Interview Bot with dynamic follow-up questions and end-of-session scoring for clarity, technical accuracy, and pacing
+- ✅ Personalized, on-demand seven-day study plan based on DSA topic progress, roadmap completion, target track, and available AI interview scores
+- ✅ Resume Analyzer accepts pasted text or PDF/DOCX uploads (5 MB maximum); extracted files are handled in memory and not stored
+- ✅ Resume-to-job-description comparison with estimated match score, evidence-backed skill matches and gaps, prioritized recommendations, and reviewable summary/bullet suggestions
+- ✅ STAR answer generation and saved stories that can be referenced in the AI Bot's HR round
 - ✅ **Placement Readiness Score** — a single 0-100 score blending DSA practice, roadmap progress, streak consistency, application pipeline, and engagement, with a breakdown and personalized next-step suggestions
 - ✅ Modern, reactive UI: fade-up scroll reveals, mouse-tilt "reactive" cards, animated stat counters, skeleton loading states, and a tightened navbar with a "More" dropdown for secondary pages — while keeping the original clean blue color palette
 - ✅ Seed script with real, well-researched sample data: **150 DSA problems** (with hints, approach, and complexity for every one — drawn from genuinely well-known, commonly-asked interview problems), **~110 interview questions** across Technical/Aptitude/HR/CS Subject (grounded in researched real-world question patterns from TCS NQT, Amazon SDE rounds, and common CS fundamentals), 30+ curated resources, 12 companies, 5 roadmaps
